@@ -2,11 +2,6 @@ import feedparser
 import requests
 from prefect import Flow, task
 
-# Define the RSS feed URL
-RSS_FEED_URL = "https://www.marketplace.org/feed/podcast/marketplace/"
-
-# Define the directory where you want to save the podcast episodes
-DOWNLOAD_DIR = "./episodes"
 
 @task
 def fetch_podcast_episodes(feed_url):
@@ -30,8 +25,11 @@ def download_episode(episode_info, download_dir):
         with open(f"{download_dir}/{episode_title}.mp3", "wb") as file:
             file.write(response.content)
 
-# Create a Prefect flow
-with Flow("DownloadMarketplacePodcastEpisodes") as flow:
+@flow()
+def get_episodes() -> None:
+    RSS_FEED_URL = "https://www.marketplace.org/feed/podcast/marketplace/"
+
+    DOWNLOAD_DIR = "./episodes"
     episodes = fetch_podcast_episodes(RSS_FEED_URL)
     download_episode.map(episodes, DOWNLOAD_DIR)
 
